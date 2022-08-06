@@ -7,35 +7,110 @@ import Timer from './components/Timer'
 import ControlPanel from './components/ControlPanel'
 import ActivitiesPane from './components/ActivitiesPane'
 
-function App() {
-  const [state, setState] = useState({})
-
-  const activities = [
+const DEFAULT_VALUES = {
+  activities: [
     {
       title: 'Session',
-      length: 25*60*1000
+      duration: 25*60*1000
     },
     {
       title: 'Break',
-      length: 5*60*1000
+      duration: 5*60*1000
     }
-  ]
+  ],
+  clockInterval: 1000,
+  activityInterval: 1*60*1000,
+  minDuration: 1*60*1000,
+  maxDuration: 60*60*1000
+} 
 
-  const incrementHandler = (target) => {
-    console.log(`increment ${target}`);
+function App() {
+  const [currentActivityId, setCurrentActivityId] = useState(0);
+  const [activities, setActivities] = useState([]);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [clockTimeInterval, setClockTimeInterval] = useState(()=>{});
+
+  const incrementHandler = (activityTitle) => {
+    const isActivityWithinBoundsFn = targetActivity => targetActivity && targetActivity.duration < DEFAULT_VALUES.maxDuration;
+    changeActivityDuration(activities, activityTitle, running, isActivityWithinBoundsFn, interval)
   }
 
-  const decrementHandler = (target) => {
-    console.log(`decrement ${target}`);
+  const decrementHandler = (activityTitle) => {
+    const isActivityWithinBoundsFn = targetActivity => targetActivity && targetActivity.duration > DEFAULT_VALUES.minDuration;
+    changeActivityDuration(activities, activityTitle, running, isActivityWithinBoundsFn, interval)
+  }
+
+  const changeActivityDuration = (activities, activityTitle, running, isActivityWithinBoundsFn) => {
+    if (running == true)
+      return;
+    const targetActivity = activities.find(activity => activity.title == activityTitle);
+    if(isActivityWithinBoundsFn(targetActivity)) {
+      const updatedActivity = {
+        ...targetActivity,
+        duration: targetActivity.duration + interval
+      }
+    }
+  }
+
+  const updateActivities = () => {
+    const updatedActivities = activities.map(activity => {
+      return activity == targetActivity
+      ? {
+        ...activity,
+        duration: activity.duration += DEFAULT_VALUES.activityInterval
+      }
+      : activity
+    })
+    setActivities(updatedActivities);
   }
 
   const startStopHandler = () => {
-    console.log('start stop...')
+    if(running) {
+      clearInterval(clockTimeInterval);
+      setClockTimeInterval(0);
+      setRunning(false);
+    }
+    else {
+      const newclockTimeInterval = setInterval(clockTick, DEFAULT_VALUES.clockInterval);
+      setClockTimeInterval(newclockTimeInterval);
+      setRunning(true);
+    }
   }
 
   const resetHandler = () => {
-    console.log('resetting...')
+    if(running == false) 
+      return;
+    clearInterval(clockTimeInterval);
+    setClockTimeInterval(0);
+    setActivities(DEFAULT_VALUES.activities);
+    setTimeLeft(DEFAULT_VALUES.activities.at(0).duration);
   }
+
+  const skipHandler = () => {
+    switchActivities();
+  }
+
+  const switchActivities = () => {
+    const newCurrentActivityId = getNextActivityId(activities, currentActivityId);
+    const newActivity = activities.at(newCurrentActivityId);
+    setCurrentActivityId(newCurrentActivityId);
+    setTimeLeft(newActivity.duration);
+  }
+
+  const getNextActivityId = (activities, currentActivityId) => {
+    return currentActivityId < activities.length - 1
+    ? currentActivityId + 1
+    : 0;
+  }
+
+  const clockTick = () => {
+    if(timeLeft > 0) {
+      setTimeLeft(prevTimeLeft => prevTimeLeft - DEFAULT_VALUES.clockInterval);
+    } else {
+      switchActivities();
+    }
+  }  
 
   const appStyles = [
     {
@@ -60,6 +135,11 @@ function App() {
     }
   ].map(style => style.value).join(' ')
 
+  useEffect(() => {
+    setActivities(DEFAULT_VALUES.activities);
+    setTimeLeft(DEFAULT_VALUES.activities.at(0).duration);
+  }, [])
+
   return (
     <div className={`App ${appStyles}`}>
       <Heading
@@ -70,13 +150,15 @@ function App() {
         decrementHandler={decrementHandler}
       />
       <Timer 
-        title="Session" 
-        timeLeft="15000"
+        title={activities.length > 0 && activities.at(currentActivityId).title}
+        timeLeft={timeLeft}
       />
       <ControlPanel
         resetHandler={resetHandler}
         startStopHandler={startStopHandler}
+        skipHandler={skipHandler}
       />
+      <p>Current Activity Id: {currentActivityId}</p>
     </div>
   )
 }

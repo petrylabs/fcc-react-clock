@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faPause, faRefresh } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faPause, faRefresh, faForward } from '@fortawesome/free-solid-svg-icons';
 import Control from './Control';
 
 export default function ControlPanel(props) {
@@ -20,6 +20,11 @@ export default function ControlPanel(props) {
                 clickHandler={props.startStopHandler}>
                 <FontAwesomeIcon icon={faPlay}/>
                 <FontAwesomeIcon icon={faPause}/>
+            </Control>
+            <Control
+                id="skip"
+                clickHandler={props.skipHandler}>
+                <FontAwesomeIcon icon={faForward}/>
             </Control>
             <Control 
                 id="reset"

@@ -17,7 +17,7 @@ export default function ActivitiesPane(props) {
                     incrementHandler={props.incrementHandler}
                     decrementHandler={props.decrementHandler}
                     title={activity.title}
-                    length={activity.length}
+                    length={activity.duration}
                 />
             ))}
         </div>
