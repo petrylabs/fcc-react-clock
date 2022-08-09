@@ -26,7 +26,6 @@ const DEFAULT_VALUES = {
   activityInterval: 1*60*1000,
   minDuration: 1*60*1000,
   maxDuration: 60*60*1000,
-  clockTimeIntervalFn: () => {},
   userMessage: ''
 } 
 
@@ -35,18 +34,9 @@ function App() {
   const [activities, setActivities] = useState(DEFAULT_VALUES.activities);
   const [timeLeft, setTimeLeft] = useState(DEFAULT_VALUES.activities.at(DEFAULT_VALUES.currentActivityId).duration);
   const [running, setRunning] = useState(DEFAULT_VALUES.running);
-  const [clockTimeIntervalFn, setClockTimeIntervalFn] = useState(DEFAULT_VALUES.clockTimeIntervalFn);
   const [userMessage, setUserMessage] = useState(DEFAULT_VALUES.userMessage);
   const [activityInterval, setActivityInterval] = useState(DEFAULT_VALUES.activityInterval);
   const [clockInterval, setClockInterval] = useState(DEFAULT_VALUES.clockInterval);
-
-  const tikTok = () => {
-    console.log('tik, tok');
-  }
-  
-  useInterval(tikTok, 1000);
-  clearInterval(tikTok);
-
 
   const incrementHandler = (activityTitle) => {
     if(running) {
@@ -62,7 +52,7 @@ function App() {
       setUserMessage(`${targetActivity.title} duration is already at maximum!`);
       return;
     }
-    const updatedActivity = updateActivity(targetActivity, 'duration', DEFAULT_VALUES.activityInterval);
+    const updatedActivity = updateActivity(targetActivity, 'duration');
     if(updatedActivity == false) {
       setUserMessage(`${targetActivity.title} duration could not be updated.`);
       return;
@@ -122,20 +112,18 @@ function App() {
 
   const startStopHandler = () => {
     if(running)
-      stopClock(clockTimeIntervalFn, DEFAULT_VALUES.clockTimeIntervalFn)
+      stopClock()
     else 
-      startClock(clockInterval)
+      startClock()
   }
 
-  const startClock = (clockInterval) => {
-    const newclockTimeIntervalFn = setInterval(() => clockTick(timeLeft), clockInterval);
-    setClockTimeIntervalFn(newclockTimeIntervalFn);
+  const startClock = () => {
+    setUserMessage('Clock started.')
     setRunning(true);
   }
 
-  const stopClock = (clockTimeIntervalFn, clockTimeIntervalDefaultFn) => {
-    clearInterval(clockTimeIntervalFn);
-    setClockTimeIntervalFn(clockTimeIntervalDefaultFn);
+  const stopClock = () => {
+    setUserMessage('Clock stopped.')
     setRunning(false);
   }
 
@@ -144,7 +132,6 @@ function App() {
     setActivities(DEFAULT_VALUES.activities);
     setTimeLeft(DEFAULT_VALUES.activities.at(DEFAULT_VALUES.currentActivityId).duration);
     setRunning(DEFAULT_VALUES.running);
-    setClockTimeIntervalFn(DEFAULT_VALUES.clockTimeIntervalFn);
     setUserMessage(DEFAULT_VALUES.userMessage);
     setActivityInterval(DEFAULT_VALUES.activityInterval);
     setClockInterval(DEFAULT_VALUES.clockInterval);
@@ -166,12 +153,15 @@ function App() {
     return currentActivityId < activities.length - 1
     ? currentActivityId + 1
     : 0;
-  }
+  } 
 
-  const clockTick = (foo) => {
-    setTimeLeft(prevTimeLeft => prevTimeLeft - DEFAULT_VALUES.clockInterval);
-    console.log('foo', foo);
-  }  
+  useInterval(() => {
+    if(timeLeft > 0) {
+      setTimeLeft(prevTimeLeft => prevTimeLeft - DEFAULT_VALUES.clockInterval);
+    } else {
+      switchActivities(activities, currentActivityId);
+    }
+  }, running ? clockInterval : null)
 
   useEffect(() => {
     if(userMessage.length > 0)
