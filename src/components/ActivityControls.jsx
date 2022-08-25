@@ -10,15 +10,19 @@ export default function ActivityControls(props) {
             key: 'display',
             value: 'flex flex-row justify-center items-baseline'
         }
-    ].map(style => style.value).join('')
+    ].map(style => style.value).join('');
+    const activityLengthId = props.acitivityTitle.toLowerCase() + '-length';
     return (
         <div className={`ActivityControls ${activityControlsStyles}`}>
             <Decrement 
+                activityTitle={props.acitivityTitle}
                 clickHandler={props.decrementHandler}/>
-            <span>
+            <span
+                id={activityLengthId}>
                 {formatTime(props.length)}
             </span>
             <Increment
+                activityTitle={props.acitivityTitle}
                 clickHandler={props.incrementHandler}/>
         </div>
     )

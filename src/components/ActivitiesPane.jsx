@@ -12,8 +12,9 @@ export default function ActivitiesPane(props) {
     return (
         <div 
             className={`ActivitiesPane ${activitiesPaneStyles}`}>
-            {props.activities.length > 0 && props.activities.map(activity => (
-                <Activity 
+            {props.activities.length > 0 && props.activities.map((activity, index) => (
+                <Activity
+                    key={`activity-${index}`}
                     incrementHandler={props.incrementHandler}
                     decrementHandler={props.decrementHandler}
                     title={activity.title}

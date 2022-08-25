@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
 
@@ -8,16 +8,17 @@ import Heading from './components/Heading'
 import Timer from './components/Timer'
 import ControlPanel from './components/ControlPanel'
 import ActivitiesPane from './components/ActivitiesPane'
+import Audio from './components/Audio'
 
 const DEFAULT_VALUES = {
   activities: [
     {
       title: 'Session',
-      duration: 1*60*1000
+      duration: 25*60*1000
     },
     {
       title: 'Break',
-      duration: 1*60*1000
+      duration: 5*60*1000
     }
   ],
   running: false,
@@ -38,6 +39,8 @@ function App() {
   const [activityInterval, setActivityInterval] = useState(DEFAULT_VALUES.activityInterval);
   const [clockInterval, setClockInterval] = useState(DEFAULT_VALUES.clockInterval);
 
+  const audioEl = useRef(null);
+
   const incrementHandler = (activityTitle) => {
     if(running) {
       setUserMessage(`Cannot increment ${activityTitle} duration while timer is running!`);
@@ -52,7 +55,7 @@ function App() {
       setUserMessage(`${targetActivity.title} duration is already at maximum!`);
       return;
     }
-    const updatedActivity = updateActivity(targetActivity, 'duration');
+    const updatedActivity = updateActivity(targetActivity, 'duration', 0 + DEFAULT_VALUES.activityInterval);
     if(updatedActivity == false) {
       setUserMessage(`${targetActivity.title} duration could not be updated.`);
       return;
@@ -62,6 +65,7 @@ function App() {
       setUserMessage(`Activities could not be updated.`);
       return;
     }
+    console.log('updatedActivities', updatedActivities);
     setActivities(updatedActivities)
   }
 
@@ -91,6 +95,10 @@ function App() {
     }
     setActivities(updatedActivities)
   } 
+
+  const beepHandler = () => {
+    console.log('beep', audioEl);
+  }
 
   const updateActivity = (targetActivity, prop, value) => {
     if(targetActivity == false || targetActivity.hasOwnProperty(prop) == false)
@@ -168,6 +176,10 @@ function App() {
       console.warn(userMessage);
   }, [userMessage]);
 
+  useEffect(() => {
+    setTimeLeft(activities[currentActivityId].duration);
+  }, [activities])
+
   const appStyles = [
     {
       key: 'display',
@@ -208,6 +220,10 @@ function App() {
         resetHandler={resetHandler}
         startStopHandler={startStopHandler}
         skipHandler={skipHandler}
+        beepHandler={beepHandler}
+      />
+      <Audio 
+        ref={audioEl}
       />
       <p>Current Activity Id: {currentActivityId}</p>
       <p>{userMessage}</p>

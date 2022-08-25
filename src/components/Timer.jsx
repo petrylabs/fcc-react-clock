@@ -21,10 +21,10 @@ export default function Timer(props) {
     ].map(style => style.value).join(' ')
     return (
         <div className={`Timer ${timerStyles}`}>
-            <label>
+            <label id="timer-label">
                 {props.title}
                 </label>
-            <div>
+            <div id="time-left">
                 {formatTime(props.timeLeft, 'mm:ss')}	
             </div>
         </div>
